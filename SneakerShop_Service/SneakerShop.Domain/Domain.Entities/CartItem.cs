@@ -1,4 +1,6 @@
-﻿namespace Domain.Entities
+﻿using Domain.Enums;
+
+namespace Domain.Entities
 {
     public class CartItem
     {
@@ -7,8 +9,8 @@
         public Guid ProductId { get; private set; }
         public Guid VariantId { get; private set; }
         public string ProductName { get; private set; }
-        public string Color { get; private set; }
-        public float Size { get; private set; }
+        public Color Color { get; private set; }
+        public Size Size { get; private set; }
         public decimal PriceAtAdd { get; private set; }
         public int Quantity { get; private set; }
 
@@ -22,8 +24,8 @@
             Guid productId,
             Guid variantId,
             string productName,
-            float size,
-            string color,
+            Size size,
+            Color color,
             decimal priceAtAdd,
             int quantity)
         {

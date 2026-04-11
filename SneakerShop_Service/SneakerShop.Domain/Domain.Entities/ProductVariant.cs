@@ -1,11 +1,13 @@
-﻿namespace Domain.Entities
+﻿using Domain.Enums;
+
+namespace Domain.Entities
 {
     public class ProductVariant
     {
         public Guid Id { get; private set; }
         public Guid ProductId { get; private set; }
-        public float Size { get; private set; }
-        public string Color { get; private set; }
+        public Size Size { get; private set; }
+        public Color Color { get; private set; }
         public string Sku { get; private set; }
         public int QuantityInStock { get; private set; }
         public string AdditionalImages { get; private set; }
@@ -17,8 +19,8 @@
 
         public ProductVariant(
             Guid productId,
-            float size,
-            string color,
+            Size size,
+            Color color,
             string sku,
             int quantityInStock,
             string additionalImages = null)
@@ -32,10 +34,10 @@
             AdditionalImages = additionalImages;
         }
 
-        public void SetColor(string color)
+        public void SetColor(Color color)
         {
-            if (string.IsNullOrWhiteSpace(color))
-                throw new ArgumentException("Цвет не может быть пустым");
+            if (color == null)
+                throw new ArgumentNullException(nameof(color));
             Color = color;
         }
 
