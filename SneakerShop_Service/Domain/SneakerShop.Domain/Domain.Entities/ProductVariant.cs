@@ -59,6 +59,8 @@ public class ProductVariant
 
     public bool IsInStock() => QuantityInStock > 0;
 
+    public bool HasSize(Size size) => Size == size;
+
     public override string ToString()
     {
         return $"ProductVariant [Id: {Id}, ProductId: {ProductId}, Size: {Size}, Color: {Color}, SKU: {Sku}, InStock: {QuantityInStock}]";

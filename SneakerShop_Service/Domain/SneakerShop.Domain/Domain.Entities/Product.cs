@@ -53,6 +53,36 @@ public class Product
     public void Deactivate() => IsActive = false;
 
     public void AddVariant(ProductVariant variant) => _variants.Add(variant);
+    public List<Size> GetAvailableSizes()
+    {
+        return _variants.Where(v => v.QuantityInStock > 0)
+                       .Select(v => v.Size)
+                       .Distinct()
+                       .ToList();
+    }
+
+    public List<ProductVariant> GetAvailableVariants()
+    {
+        return _variants.Where(v => v.QuantityInStock > 0).ToList();
+    }
+
+    public ProductVariant? GetVariantBySize(Size size)
+    {
+        return _variants.FirstOrDefault(v => v.Size == size);
+    }
+
+    public List<string> GetAllImages()
+    {
+        var images = new List<string> { MainImageUrl.Value };
+        foreach (var variant in _variants)
+        {
+            if (!string.IsNullOrWhiteSpace(variant.AdditionalImages.Value))
+            {
+                images.AddRange(variant.AdditionalImages.Value.Split(','));
+            }
+        }
+        return images.Distinct().ToList();
+    }
 
     public override string ToString()
     {
