@@ -1,37 +1,25 @@
-﻿using SneakerShop.ValueObject;
+﻿using SneakerShop.Domain.Base;
+using SneakerShop.ValueObjects;
 
-namespace SneakerShop.Domain.Domain.Entities;
+namespace SneakerShop.Domain.Entities;
 
-public class User
+public class User : Entity<Guid>
 {
-    public Guid Id { get; private set; }
     public Nickname Nickname { get; private set; }
+    public Guid CartId { get; private set; }
+    public Guid WishlistId { get; private set; }
 
-    public Cart Cart { get; private set; }
-    public Wishlist Wishlist { get; private set; }
+    protected User() { }
 
-    private User() { }
-
-    public User(Nickname nickname)
+    public User(Guid id, Nickname nickname, Guid cartId, Guid wishlistId) : base(id)
     {
-        Id = Guid.NewGuid();
-        Nickname = nickname;
-    }
-
-    public void UpdateNickname(Nickname nickname) => Nickname = nickname;
-
-    public void CreateCart()
-    {
-        Cart = new Cart(Id);
-    }
-
-    public void CreateWishlist()
-    {
-        Wishlist = new Wishlist(Id);
+        Nickname = nickname ?? throw new ArgumentNullException(nameof(nickname));
+        CartId = cartId;
+        WishlistId = wishlistId;
     }
 
     public override string ToString()
     {
-        return $"User [Id: {Id}, Nickname: {Nickname}]";
+        return $"{Nickname.Value} (Id: {Id}, CartId: {CartId}, WishlistId: {WishlistId})";
     }
 }

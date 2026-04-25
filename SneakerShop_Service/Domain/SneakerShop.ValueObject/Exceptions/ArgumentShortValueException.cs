@@ -1,4 +1,4 @@
-﻿namespace SneakerShop.ValueObject.Exceptions;
+﻿namespace SneakerShop.ValueObjects.Exceptions;
 
 public class ArgumentShortValueException(string paramName, string value, int minLength)
     : FormatException($"The \"{paramName}\" length {value.Length} less than minimum allowed length {minLength}")

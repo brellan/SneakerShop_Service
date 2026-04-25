@@ -1,289 +1,252 @@
-﻿using SneakerShop.Domain.Domain.Entities;
-using SneakerShop.ValueObject;
-using SneakerShop.Domain.Domain.Enums;
+﻿using SneakerShop.Domain.Entities;
+using SneakerShop.Domain.Enums;
+using SneakerShop.ValueObjects;
 
-namespace SneakerShop.DomainApp
+namespace SneakerStore.DomainApp
 {
     class Program
     {
         static void Main(string[] args)
         {
-
-            // ПОДГОТОВКА ТЕСТОВЫХ ДАННЫХ
+            // ===== ПОДГОТОВКА ТЕСТОВЫХ ДАННЫХ =====
             Console.WriteLine("--- Подготовка тестовых данных ---\n");
 
-            // Создание брендов
-            var nikeBrand = new Brand(new BrandName("Nike"), new LogoUrl("https://example.com/nike.png"), new Description("Just Do It"));
-            var adidasBrand = new Brand(new BrandName("Adidas"), new LogoUrl("https://example.com/adidas.png"), new Description("Impossible is Nothing"));
-
-            // Создание товаров
-            var jordan1 = new Product(nikeBrand.Id, new ProductName("Air Jordan 1"), new Description("Классические кроссовки"), 18999.99m, Currency.RUB, new MainImageUrl("https://example.com/jordan1.jpg"));
-            var dunk = new Product(nikeBrand.Id, new ProductName("Nike Dunk Low"), new Description("Повседневные кроссовки"), 12999.99m, Currency.RUB, new MainImageUrl("https://example.com/dunk.jpg"));
-            var yeezy = new Product(adidasBrand.Id, new ProductName("Yeezy 350"), new Description("Кроссовки от Kanye West"), 24999.99m, Currency.RUB, new MainImageUrl("https://example.com/yeezy.jpg"));
-
-            // Добавление вариантов (размеры обуви от 39 до 45)
-            jordan1.AddVariant(new ProductVariant(jordan1.Id, Size.Size39, Color.Red, new Sku("AJ1391234"), 10, new AdditionalImages(null)));
-            jordan1.AddVariant(new ProductVariant(jordan1.Id, Size.Size40, Color.Red, new Sku("AJ1401234"), 15, new AdditionalImages(null)));
-            jordan1.AddVariant(new ProductVariant(jordan1.Id, Size.Size41, Color.Red, new Sku("AJ1411234"), 8, new AdditionalImages(null)));
-            jordan1.AddVariant(new ProductVariant(jordan1.Id, Size.Size42, Color.Red, new Sku("AJ1421234"), 12, new AdditionalImages(null)));
-            jordan1.AddVariant(new ProductVariant(jordan1.Id, Size.Size43, Color.Red, new Sku("AJ1431234"), 5, new AdditionalImages(null)));
-            jordan1.AddVariant(new ProductVariant(jordan1.Id, Size.Size44, Color.Red, new Sku("AJ1441234"), 3, new AdditionalImages(null)));
-            jordan1.AddVariant(new ProductVariant(jordan1.Id, Size.Size45, Color.Red, new Sku("AJ1451234"), 0, new AdditionalImages(null)));
-
-            dunk.AddVariant(new ProductVariant(dunk.Id, Size.Size40, Color.Black, new Sku("DUNK40123"), 20, new AdditionalImages(null)));
-            dunk.AddVariant(new ProductVariant(dunk.Id, Size.Size41, Color.Black, new Sku("DUNK41123"), 25, new AdditionalImages(null)));
-            dunk.AddVariant(new ProductVariant(dunk.Id, Size.Size42, Color.Black, new Sku("DUNK42123"), 18, new AdditionalImages(null)));
-            dunk.AddVariant(new ProductVariant(dunk.Id, Size.Size43, Color.Black, new Sku("DUNK43123"), 8, new AdditionalImages(null)));
-
-            yeezy.AddVariant(new ProductVariant(yeezy.Id, Size.Size41, Color.White, new Sku("YZY411234"), 3, new AdditionalImages(null)));
-            yeezy.AddVariant(new ProductVariant(yeezy.Id, Size.Size42, Color.White, new Sku("YZY421234"), 7, new AdditionalImages(null)));
-            yeezy.AddVariant(new ProductVariant(yeezy.Id, Size.Size43, Color.White, new Sku("YZY431234"), 5, new AdditionalImages(null)));
-
-            // Создание каталога
-            var catalog = new ProductCatalog();
-            catalog.AddProduct(jordan1);
-            catalog.AddProduct(dunk);
-            catalog.AddProduct(yeezy);
-
             // Создание пользователя
-            var user = new User(new Nickname("SneakerHead"));
-            user.CreateCart();
-            user.CreateWishlist();
+            var userId = Guid.NewGuid();
+            var cartId = Guid.NewGuid();
+            var wishlistId = Guid.NewGuid();
+            var user = new User(userId, new Nickname("SneakerHead"), cartId, wishlistId);
+            Console.WriteLine($"Создан пользователь: {user.Nickname.Value} (Id: {user.Id})\n");
 
-            // ===== 1. ПРОСМОТР СПИСКА ВСЕХ КРОССОВОК =====
-            Console.WriteLine("1. Просмотр списка всех кроссовок:");
-            foreach (var product in catalog.GetAllProducts())
+            // Создание корзины и вишлиста
+            var cart = new Cart(cartId, user.Id);
+            var wishlist = new Wishlist(wishlistId, user.Id);
+            Console.WriteLine($"Создана корзина (Id: {cart.Id})");
+            Console.WriteLine($"Создан вишлист (Id: {wishlist.Id})\n");
+
+            // Создание бренда
+            var brand = new Brand(
+                Guid.NewGuid(),
+                new BrandName("Nike"),
+                "https://example.com/nike-logo.png",
+                new Description("Just Do It - всемирно известный бренд спортивной обуви"));
+            Console.WriteLine($"Создан бренд: {brand.Name.Value}\n");
+
+            // Создание продукта
+            var product = brand.AddProduct(
+                new ProductName("Air Jordan 1"),
+                new Description("Культовые кроссовки, выпущенные в 1985 году"),
+                new Price(18999.99m),
+                Currency.RUB,
+                "https://example.com/jordan1.jpg");
+            Console.WriteLine($"Создан продукт: {product.ProductName.Value} - {product.BasePrice.Value} {product.Currency}\n");
+
+            // Добавление вариантов
+            var variant1 = product.AddVariant(new Size(41f), new Color("Красный"), new Sku("AJ1-41-RED"), 10);
+            var variant2 = product.AddVariant(new Size(42f), new Color("Красный"), new Sku("AJ1-42-RED"), 5);
+            var variant3 = product.AddVariant(new Size(43f), new Color("Черный"), new Sku("AJ1-43-BLK"), 3);
+            Console.WriteLine("Добавлены варианты продукта:");
+            Console.WriteLine($"  - Размер {variant1.Size.Value}, цвет {variant1.Color.Value}, SKU: {variant1.Sku.Value}, в наличии: {variant1.QuantityInStock}");
+            Console.WriteLine($"  - Размер {variant2.Size.Value}, цвет {variant2.Color.Value}, SKU: {variant2.Sku.Value}, в наличии: {variant2.QuantityInStock}");
+            Console.WriteLine($"  - Размер {variant3.Size.Value}, цвет {variant3.Color.Value}, SKU: {variant3.Sku.Value}, в наличии: {variant3.QuantityInStock}\n");
+
+            // ===== 1. ДОБАВЛЕНИЕ ТОВАРА В КОРЗИНУ =====
+            Console.WriteLine("--- 1. Добавление товара в корзину ---");
+            var cartItem = cart.AddItem(user.Id, variant2, 2);
+            Console.WriteLine($"Добавлен товар: {cartItem.ProductName.Value}, размер {cartItem.Size.Value}, количество {cartItem.Quantity}");
+            Console.WriteLine($"Цена за единицу: {cartItem.PriceAtAdd.Value} руб.");
+            Console.WriteLine($"Общая стоимость позиции: {cartItem.GetTotalPrice()} руб.");
+            Console.WriteLine($"Общая стоимость корзины: {cart.TotalPrice} руб.\n");
+
+            // ===== 2. ДОБАВЛЕНИЕ ТОГО ЖЕ ВАРИАНТА (увеличение количества) =====
+            Console.WriteLine("--- 2. Добавление того же варианта (увеличение количества) ---");
+            var sameItem = cart.AddItem(user.Id, variant2, 3);
+            Console.WriteLine($"Теперь количество: {sameItem.Quantity}");
+            Console.WriteLine($"Общая стоимость позиции: {sameItem.GetTotalPrice()} руб.\n");
+
+            // ===== 3. ИЗМЕНЕНИЕ КОЛИЧЕСТВА В КОРЗИНЕ =====
+            Console.WriteLine("--- 3. Изменение количества в корзине ---");
+            cart.UpdateItemQuantity(user.Id, cartItem.Id, 1);
+            Console.WriteLine($"Количество изменено на: {cartItem.Quantity}\n");
+
+            // ===== 4. ДОБАВЛЕНИЕ ДРУГОГО ТОВАРА В КОРЗИНУ =====
+            Console.WriteLine("--- 4. Добавление другого товара в корзину ---");
+            var cartItem2 = cart.AddItem(user.Id, variant1, 1);
+            Console.WriteLine($"Добавлен товар: {cartItem2.ProductName.Value}, размер {cartItem2.Size.Value}");
+            Console.WriteLine($"Товаров в корзине: {cart.Items.Count}\n");
+
+            // ===== 5. УДАЛЕНИЕ ТОВАРА ИЗ КОРЗИНЫ =====
+            Console.WriteLine("--- 5. Удаление товара из корзины ---");
+            cart.RemoveItem(user.Id, cartItem2.Id);
+            Console.WriteLine($"Товаров в корзине после удаления: {cart.Items.Count}\n");
+
+            // ===== 6. ОЧИСТКА КОРЗИНЫ =====
+            Console.WriteLine("--- 6. Очистка корзины ---");
+            cart.Clear(user.Id);
+            Console.WriteLine($"Товаров в корзине: {cart.Items.Count}");
+            Console.WriteLine($"Общая стоимость: {cart.TotalPrice} руб.\n");
+
+            // ===== 7. ДОБАВЛЕНИЕ В ВИШЛИСТ =====
+            Console.WriteLine("--- 7. Добавление в вишлист ---");
+            var wishlistItem = wishlist.AddItem(user.Id, variant3);
+            Console.WriteLine($"Добавлен товар в вишлист: продукт {product.ProductName.Value}, размер {variant3.Size.Value}\n");
+
+            // ===== 8. ПРОВЕРКА НАЛИЧИЯ В ВИШЛИСТЕ =====
+            Console.WriteLine("--- 8. Проверка наличия в вишлисте ---");
+            bool contains = wishlist.ContainsVariant(user.Id, variant3.Id);
+            Console.WriteLine($"Вариант {variant3.Sku.Value} в вишлисте: {contains}");
+            bool notContains = wishlist.ContainsVariant(user.Id, variant1.Id);
+            Console.WriteLine($"Вариант {variant1.Sku.Value} в вишлисте: {notContains}\n");
+
+            // ===== 9. ДОБАВЛЕНИЕ ДУБЛИКАТА В ВИШЛИСТ =====
+            Console.WriteLine("--- 9. Попытка добавить дубликат в вишлист ---");
+            var duplicateItem = wishlist.AddItem(user.Id, variant3);
+            Console.WriteLine($"Дубликат не добавлен, возвращен существующий элемент (Id: {duplicateItem.Id})\n");
+
+            // ===== 10. УДАЛЕНИЕ ИЗ ВИШЛИСТА ПО ID ВАРИАНТА =====
+            Console.WriteLine("--- 10. Удаление из вишлиста по ID варианта ---");
+            wishlist.RemoveItemByVariant(user.Id, variant3.Id);
+            Console.WriteLine($"Товаров в вишлисте после удаления: {wishlist.Items.Count}\n");
+
+            // ===== 11. ПРОСМОТР ВСЕХ ПРОДУКТОВ БРЕНДА =====
+            Console.WriteLine("--- 11. Просмотр всех продуктов бренда ---");
+            Console.WriteLine($"Бренд: {brand.Name.Value}");
+            Console.WriteLine($"Количество продуктов: {brand.Products.Count}");
+            foreach (var p in brand.Products)
             {
-                Console.WriteLine($"- {product.Name.Value} | {product.BasePrice} {product.Currency}");
+                Console.WriteLine($"  - {p.ProductName.Value} ({p.Variants.Count} вариантов)");
             }
             Console.WriteLine();
 
-            // ===== 2. ФИЛЬТРАЦИЯ ПО БРЕНДУ =====
-            Console.WriteLine("2. Фильтрация по бренду (Nike):");
-            var nikeProducts = catalog.GetProductsByBrand(nikeBrand.Id);
-            foreach (var product in nikeProducts)
+            // ===== 12. ПРОСМОТР ВАРИАНТОВ ПРОДУКТА =====
+            Console.WriteLine("--- 12. Просмотр вариантов продукта ---");
+            Console.WriteLine($"Продукт: {product.ProductName.Value}");
+            foreach (var v in product.Variants)
             {
-                Console.WriteLine($"- {product.Name.Value} | {product.BasePrice} {product.Currency}");
+                Console.WriteLine($"  - Размер: {v.Size.Value}, Цвет: {v.Color.Value}, SKU: {v.Sku.Value}, В наличии: {v.QuantityInStock}");
             }
             Console.WriteLine();
 
-            // ===== 3. ФИЛЬТРАЦИЯ ПО РАЗМЕРУ =====
-            Console.WriteLine("3. Фильтрация по размеру (42):");
-            var size42Products = catalog.GetProductsBySize(Size.Size42);
-            foreach (var product in size42Products)
-            {
-                var sizes = product.GetAvailableSizes();
-                var sizesStr = string.Join(", ", sizes.Select(s => ((int)s).ToString()));
-                Console.WriteLine($"- {product.Name.Value} | Доступные размеры: {sizesStr}");
-            }
-            Console.WriteLine();
+            // ===== 13. БРОНИРОВАНИЕ ТОВАРА НА СКЛАДЕ =====
+            Console.WriteLine("--- 13. Бронирование товара (уменьшение stock) ---");
+            variant1.RemoveStock(2);
+            Console.WriteLine($"Было 10, забронировано 2, осталось: {variant1.QuantityInStock}\n");
 
-            // ===== 4. ФИЛЬТРАЦИЯ ПО ЦЕНОВОМУ ДИАПАЗОНУ =====
-            Console.WriteLine("4. Фильтрация по ценовому диапазону (10000 - 20000 руб.):");
-            var priceRangeProducts = catalog.GetProductsByPriceRange(10000, 20000);
-            foreach (var product in priceRangeProducts)
-            {
-                Console.WriteLine($"- {product.Name.Value} | {product.BasePrice} {product.Currency}");
-            }
-            Console.WriteLine();
-
-            // ===== 5. ПРОСМОТР ДЕТАЛЬНОЙ КАРТОЧКИ ТОВАРА =====
-            Console.WriteLine("5. Просмотр детальной карточки товара (Air Jordan 1):");
-            var detailProduct = catalog.GetProductById(jordan1.Id);
-            if (detailProduct != null)
-            {
-                Console.WriteLine($"Название: {detailProduct.Name.Value}");
-                Console.WriteLine($"Описание: {detailProduct.Description.Value}");
-                Console.WriteLine($"Цена: {detailProduct.BasePrice} {detailProduct.Currency}");
-                Console.WriteLine($"Главное фото: {detailProduct.MainImageUrl.Value}");
-                Console.WriteLine("Наличие размеров:");
-                foreach (var variant in detailProduct.GetAvailableVariants())
-                {
-                    Console.WriteLine($"  - Размер {(int)variant.Size} | В наличии: {variant.QuantityInStock} шт.");
-                }
-            }
-            Console.WriteLine();
-
-            // ===== 6. ДОБАВЛЕНИЕ ТОВАРА В КОРЗИНУ =====
-            Console.WriteLine("6. Добавление товара в корзину (Air Jordan 1, размер 42):");
-            if (detailProduct != null)
-            {
-                var selectedVariant = detailProduct.GetVariantBySize(Size.Size42);
-                if (selectedVariant != null && selectedVariant.IsInStock())
-                {
-                    var cartItem = new CartItem(
-                        user.Cart.Id,
-                        detailProduct.Id,
-                        selectedVariant.Id,
-                        new ProductNameAtCart(detailProduct.Name.Value),
-                        selectedVariant.Size,
-                        selectedVariant.Color,
-                        detailProduct.BasePrice,
-                        2
-                    );
-                    user.Cart.AddItem(cartItem);
-                    Console.WriteLine($"Добавлено: {cartItem.ProductName.Value} (Размер {(int)cartItem.Size}) x{cartItem.Quantity}");
-                }
-            }
-            Console.WriteLine();
-
-            // ===== 7. ПРОСМОТР СОДЕРЖИМОГО КОРЗИНЫ =====
-            Console.WriteLine("7. Просмотр содержимого корзины:");
-            if (user.Cart.Items.Any())
-            {
-                foreach (var item in user.Cart.Items)
-                {
-                    Console.WriteLine($"- {item.ProductName.Value} | Размер {(int)item.Size} | {item.Quantity} шт. | {item.GetTotalPrice()} руб.");
-                }
-                Console.WriteLine($"Общая сумма: {user.Cart.TotalPrice} руб.");
-            }
-            else
-            {
-                Console.WriteLine("Корзина пуста");
-            }
-            Console.WriteLine();
-
-            // ===== 8. УДАЛЕНИЕ ТОВАРА ИЗ КОРЗИНЫ =====
-            Console.WriteLine("8. Удаление товара из корзины:");
-            var itemToRemove = user.Cart.Items.FirstOrDefault();
-            if (itemToRemove != null)
-            {
-                user.Cart.RemoveItem(itemToRemove.Id);
-                Console.WriteLine($"Удален товар: {itemToRemove.ProductName.Value}");
-            }
-            Console.WriteLine($"Товаров в корзине после удаления: {user.Cart.Items.Count}");
-            Console.WriteLine();
-
-            // ===== 9. ДОБАВЛЕНИЕ ТОВАРА В ВИШЛИСТ =====
-            Console.WriteLine("9. Добавление товара в вишлист:");
-            if (detailProduct != null)
-            {
-                var selectedVariant = detailProduct.GetVariantBySize(Size.Size42);
-                if (selectedVariant != null)
-                {
-                    var wishlistItem = new WishlistItem(user.Wishlist.Id, detailProduct.Id, selectedVariant.Id);
-                    user.Wishlist.AddItem(wishlistItem);
-                    Console.WriteLine($"Добавлен в вишлист: {detailProduct.Name.Value} (Размер {(int)selectedVariant.Size})");
-                }
-            }
-            Console.WriteLine();
-
-            // ===== 10. ПРОСМОТР СОДЕРЖИМОГО ВИШЛИСТА =====
-            Console.WriteLine("10. Просмотр содержимого вишлиста:");
-            if (user.Wishlist.Items.Any())
-            {
-                foreach (var item in user.Wishlist.Items)
-                {
-                    var product = catalog.GetProductById(item.ProductId);
-                    if (product != null)
-                    {
-                        Console.WriteLine($"- {product.Name.Value} | ID варианта: {item.ProductVariantId}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"- Товар (удален) | ID варианта: {item.ProductVariantId}");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Вишлист пуст");
-            }
-            Console.WriteLine();
-
-            // ===== 11. УДАЛЕНИЕ ТОВАРА ИЗ ВИШЛИСТА =====
-            Console.WriteLine("11. Удаление товара из вишлиста:");
-            var wishlistItemToRemove = user.Wishlist.Items.FirstOrDefault();
-            if (wishlistItemToRemove != null)
-            {
-                user.Wishlist.RemoveItem(wishlistItemToRemove.Id);
-            }
-            Console.WriteLine($"Товаров в вишлисте после удаления: {user.Wishlist.Count}");
-            Console.WriteLine();
-
-            // ===== 12. ОЧИСТКА КОРЗИНЫ =====
-            Console.WriteLine("12. Очистка корзины:");
-            user.Cart.Clear();
-            Console.WriteLine($"Корзина пуста: {user.Cart.Items.Count == 0}");
-            Console.WriteLine();
-
-            // ===== 13. ОЧИСТКА ВИШЛИСТА =====
-            Console.WriteLine("13. Очистка вишлиста:");
-            user.Wishlist.Clear();
-            Console.WriteLine($"Вишлист пуст: {user.Wishlist.Count == 0}");
-            Console.WriteLine();
-
-            // ===== 14. РАСШИРЕННАЯ ФИЛЬТРАЦИЯ =====
-            Console.WriteLine("14. Расширенная фильтрация (Nike, размер 41, цена до 20000):");
-            var filter = new ProductFilter
-            {
-                BrandId = nikeBrand.Id,
-                Size = Size.Size41,
-                MaxPrice = 20000
-            };
-            var filteredProducts = catalog.FilterProducts(filter);
-            foreach (var product in filteredProducts)
-            {
-                var hasSize41 = product.GetVariantBySize(Size.Size41)?.IsInStock() == true ? "есть" : "нет";
-                Console.WriteLine($"- {product.Name.Value} | {product.BasePrice} руб. | Размер 41: {hasSize41}");
-            }
-
-            // ===== 15. ДЕМОНСТРАЦИЯ ToString() =====
-            Console.WriteLine("15. Демонстрация ToString():");
-            Console.WriteLine($"Бренд: {nikeBrand}");
-            Console.WriteLine($"Товар: {jordan1}");
-            Console.WriteLine($"Вариант: {catalog.GetProductById(jordan1.Id).GetVariantBySize(Size.Size40)}");
-            Console.WriteLine($"Пользователь: {user}");
-            Console.WriteLine($"Корзина: {user.Cart}");
-            Console.WriteLine($"Вишлист: {user.Wishlist}");
-            Console.WriteLine();
+            // ===== 14. ПРОВЕРКА ДОСТУПНОСТИ ТОВАРА =====
+            Console.WriteLine("--- 14. Проверка доступности товара ---");
+            Console.WriteLine($"Продукт активен: {product.IsActive}");
+            Console.WriteLine($"Вариант {variant1.Sku.Value} в наличии: {variant1.QuantityInStock} шт.\n");
 
             // ===== 16. ДЕМОНСТРАЦИЯ ИСКЛЮЧЕНИЙ =====
-            Console.WriteLine("16. Демонстрация исключений:");
+            Console.WriteLine("--- 16. Демонстрация исключений ---\n");
 
-            Console.WriteLine("16.1. Попытка создать бренд с названием 'A':");
-            try { var _ = new BrandName("A"); }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.2. Попытка создать URL логотипа 'not-a-url':");
-            try { var _ = new LogoUrl("not-a-url"); }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.3. Попытка создать SKU 'SHORT':");
-            try { var _ = new Sku("SHORT"); }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.4. Попытка установить отрицательную цену:");
-            try { jordan1.SetBasePrice(-1000); }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.5. Попытка списать 1000 единиц (в наличии 10):");
-            try { catalog.GetProductById(jordan1.Id).GetVariantBySize(Size.Size40).DecreaseStock(1000); }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.6. Попытка добавить в корзину товар с отрицательным количеством:");
-            try
-            {
-                var _ = new CartItem(user.Cart.Id, jordan1.Id, catalog.GetProductById(jordan1.Id).GetVariantBySize(Size.Size40).Id, new ProductNameAtCart(jordan1.Name.Value), catalog.GetProductById(jordan1.Id).GetVariantBySize(Size.Size40).Size, catalog.GetProductById(jordan1.Id).GetVariantBySize(Size.Size40).Color, jordan1.BasePrice, -5);
-            }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.7. Попытка создать продукт с пустым названием:");
-            try { var _ = new ProductName(""); }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.8. Попытка добавить дубликат в вишлист:");
-            var testItem = new WishlistItem(user.Wishlist.Id, jordan1.Id, catalog.GetProductById(jordan1.Id).GetVariantBySize(Size.Size40).Id);
-            try
-            {
-                user.Wishlist.AddItem(testItem);
-                user.Wishlist.AddItem(testItem);
-            }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
-
-            Console.WriteLine("\n16.9. Попытка создать пользователя с пустым никнеймом:");
+            Console.WriteLine("16.1. Попытка создать Nickname с пустой строкой:");
             try { var _ = new Nickname(""); }
-            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}"); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.2. Попытка создать Nickname короче 3 символов:");
+            try { var _ = new Nickname("ab"); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.3. Попытка создать Nickname длиннее 30 символов:");
+            try { var _ = new Nickname(new string('a', 31)); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.4. Попытка создать BrandName с пустой строкой:");
+            try { var _ = new BrandName(""); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.5. Попытка создать ProductName с пустой строкой:");
+            try { var _ = new ProductName(""); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.6. Попытка создать Price = 0:");
+            try { var _ = new Price(0); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.7. Попытка создать Price = -100:");
+            try { var _ = new Price(-100); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.8. Попытка создать Size = 0:");
+            try { var _ = new Size(0); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.9. Попытка создать Size = 60:");
+            try { var _ = new Size(60); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.10. Попытка создать Sku с пустой строкой:");
+            try { var _ = new Sku(""); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.11. Попытка добавить вариант к неактивному продукту:");
+            var inactiveProduct = new Product(Guid.NewGuid(), brand, new ProductName("Test"),
+                new Description("Test"), new Price(100), Currency.RUB, "test.jpg", false);
+            try { inactiveProduct.AddVariant(new Size(42f), new Color("Red"), new Sku("TST-42-RD"), 10); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.12. Попытка добавить товар с отрицательным количеством:");
+            try { cart.AddItem(user.Id, variant1, -5); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.13. Попытка добавить товар с превышением остатка:");
+            try { cart.AddItem(user.Id, variant1, 100); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.14. Попытка изменить корзину чужого пользователя:");
+            var otherUserId = Guid.NewGuid();
+            try { cart.AddItem(otherUserId, variant1, 1); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.15. Попытка удалить несуществующий товар из корзины:");
+            try { cart.RemoveItem(user.Id, Guid.NewGuid()); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.16. Попытка обновить количество несуществующего товара:");
+            try { cart.UpdateItemQuantity(user.Id, Guid.NewGuid(), 5); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.17. Попытка изменить вишлист чужого пользователя:");
+            try { wishlist.AddItem(otherUserId, variant1); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.18. Попытка списать отрицательное количество со склада:");
+            try { variant1.RemoveStock(-5); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.19. Попытка списать больше, чем есть на складе:");
+            try { variant3.RemoveStock(100); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.20. Попытка создать User с null Nickname:");
+            try { var _ = new User(Guid.NewGuid(), null!, Guid.NewGuid(), Guid.NewGuid()); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.21. Попытка создать Brand с null BrandName:");
+            try { var _ = new Brand(Guid.NewGuid(), null!, "logo.png", new Description("desc")); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.22. Попытка создать Product с null ProductName:");
+            try { var _ = new Product(Guid.NewGuid(), brand, null!, new Description("desc"), new Price(100), Currency.RUB, "img.jpg"); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            Console.WriteLine("16.23. Попытка создать CartItem с нулевым количеством:");
+            try { var _ = new CartItem(Guid.NewGuid(), cart, variant1, new ProductName("Test"), new Size(42f), new Color("Red"), new Price(100), 0); }
+            catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
+
+            // ===== 17. ДЕМОНСТРАЦИЯ TOSTRING() =====
+            Console.WriteLine("--- 17. Демонстрация ToString() ---");
+            Console.WriteLine($"User: {user}");
+            Console.WriteLine($"Brand: {brand}");
+            Console.WriteLine($"Product: {product}");
+            Console.WriteLine($"Variant1: {variant1}");
+            Console.WriteLine($"Variant2: {variant2}");
+            Console.WriteLine($"Variant3: {variant3}");
+            Console.WriteLine($"Cart: {cart}");
+            Console.WriteLine($"CartItem: {cartItem}");
+            Console.WriteLine($"Wishlist: {wishlist}");
+            Console.WriteLine($"WishlistItem: {wishlistItem}");
         }
     }
 }

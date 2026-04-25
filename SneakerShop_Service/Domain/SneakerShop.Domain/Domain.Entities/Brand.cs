@@ -1,35 +1,43 @@
-﻿using SneakerShop.ValueObject;
+﻿using SneakerShop.Domain.Base;
+using SneakerShop.Domain.Enums;
+using SneakerShop.ValueObjects;
 
-namespace SneakerShop.Domain.Domain.Entities;
+namespace SneakerShop.Domain.Entities;
 
-public class Brand
+public class Brand : Entity<Guid>
 {
-    public Guid Id { get; private set; }
     public BrandName Name { get; private set; }
-    public LogoUrl LogoUrl { get; private set; }
+    public string LogoUrl { get; private set; }
     public Description Description { get; private set; }
 
-    private readonly List<Product> _products = new();
-    public IReadOnlyCollection<Product> Products => _products.AsReadOnly();
+    private readonly ICollection<Product> _products = [];
+    public IReadOnlyCollection<Product> Products => _products.ToList().AsReadOnly();
 
-    private Brand() { }
+    protected Brand() { }
 
-    public Brand(BrandName name, LogoUrl logoUrl, Description description)
+    public Brand(Guid id, BrandName name, string logoUrl, Description description) : base(id)
     {
-        Id = Guid.NewGuid();
-        Name = name;
-        LogoUrl = logoUrl;
-        Description = description;
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        LogoUrl = logoUrl ?? throw new ArgumentNullException(nameof(logoUrl));
+        Description = description ?? throw new ArgumentNullException(nameof(description));
     }
 
-    public void UpdateName(BrandName name) => Name = name;
-    public void UpdateLogo(LogoUrl logoUrl) => LogoUrl = logoUrl;
-    public void UpdateDescription(Description description) => Description = description;
+    public Product AddProduct(ProductName name, Description description, Price basePrice,
+        Currency currency, string mainImageUrl)
+    {
+        var product = new Product(Guid.NewGuid(), this, name, description, basePrice, currency, mainImageUrl);
+        _products.Add(product);
+        return product;
+    }
 
-    public void AddProduct(Product product) => _products.Add(product);
+    internal void AddProduct(Product product)
+    {
+        if (!_products.Contains(product))
+            _products.Add(product);
+    }
 
     public override string ToString()
     {
-        return $"Brand [Id: {Id}, Name: {Name}]";
+        return $"{Name.Value} (Id: {Id}, Products: {_products.Count})";
     }
 }

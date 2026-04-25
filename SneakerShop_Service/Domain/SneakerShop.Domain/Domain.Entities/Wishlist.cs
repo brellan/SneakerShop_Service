@@ -1,62 +1,69 @@
-﻿namespace SneakerShop.Domain.Domain.Entities;
+﻿using SneakerShop.Domain.Base;
 
-public class Wishlist
+namespace SneakerShop.Domain.Entities;
+
+public class Wishlist : Entity<Guid>
 {
-    public Guid Id { get; private set; }
     public Guid UserId { get; private set; }
 
-    private readonly List<WishlistItem> _items = new();
-    public IReadOnlyCollection<WishlistItem> Items => _items.AsReadOnly();
+    private readonly ICollection<WishlistItem> _items = [];
+    public IReadOnlyCollection<WishlistItem> Items => _items.ToList().AsReadOnly();
 
-    public int Count => _items.Count;
+    protected Wishlist() { }
 
-    private Wishlist() { }
-
-    public Wishlist(Guid userId)
+    public Wishlist(Guid id, Guid userId) : base(id)
     {
-        Id = Guid.NewGuid();
         UserId = userId;
     }
 
-    public void AddItem(WishlistItem item)
+    public WishlistItem AddItem(Guid userId, ProductVariant variant)
     {
-        if (item == null)
-            throw new ArgumentNullException(nameof(item));
+        if (UserId != userId)
+            throw new InvalidOperationException($"User {userId} cannot edit wishlist belonging to another user");
 
-        var exists = _items.Any(i => i.ProductId == item.ProductId &&
-                                     i.ProductVariantId == item.ProductVariantId);
-        if (exists)
-            throw new InvalidOperationException("Товар уже в списке желаний");
+        if (variant == null) throw new ArgumentNullException(nameof(variant));
 
+        var existingItem = _items.FirstOrDefault(i => i.ProductVariant?.Id == variant.Id);
+        if (existingItem != null)
+            return existingItem;
+
+        var item = new WishlistItem(Guid.NewGuid(), this, variant, variant.Product.Id);
         _items.Add(item);
+        return item;
     }
 
-    public void RemoveItem(Guid wishlistItemId)
+    public void RemoveItem(Guid userId, Guid wishlistItemId)
     {
+        if (UserId != userId)
+            throw new InvalidOperationException($"User {userId} cannot edit wishlist belonging to another user");
+
         var item = _items.FirstOrDefault(i => i.Id == wishlistItemId);
+        if (item == null)
+            throw new InvalidOperationException($"Wishlist item with id {wishlistItemId} not found");
+
+        _items.Remove(item);
+    }
+
+    public void RemoveItemByVariant(Guid userId, Guid variantId)
+    {
+        if (UserId != userId)
+            throw new InvalidOperationException($"User {userId} cannot edit wishlist belonging to another user");
+
+        var item = _items.FirstOrDefault(i => i.ProductVariant?.Id == variantId);
         if (item != null)
             _items.Remove(item);
     }
 
-    public void RemoveProduct(Guid productId)
+    public bool ContainsVariant(Guid userId, Guid variantId)
     {
-        var itemsToRemove = _items.Where(i => i.ProductId == productId).ToList();
-        foreach (var item in itemsToRemove)
-            _items.Remove(item);
-    }
+        if (UserId != userId)
+            throw new InvalidOperationException($"User {userId} cannot view wishlist belonging to another user");
 
-    public bool ContainsProduct(Guid productId)
-    {
-        return _items.Any(i => i.ProductId == productId);
-    }
-
-    public void Clear()
-    {
-        _items.Clear();
+        return _items.Any(i => i.ProductVariant?.Id == variantId);
     }
 
     public override string ToString()
     {
-        return $"Wishlist [Id: {Id}, UserId: {UserId}, ItemsCount: {_items.Count}]";
+        return $"Wishlist {Id} UserId: {UserId} Items: {_items.Count}";
     }
 }

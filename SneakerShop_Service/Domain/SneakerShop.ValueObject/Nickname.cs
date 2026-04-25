@@ -1,6 +1,6 @@
-﻿using SneakerShop.ValueObject.Base;
-using SneakerShop.ValueObject.Validators;
+﻿using SneakerShop.ValueObjects.Base;
+using SneakerShop.ValueObjects.Validators;
 
-namespace SneakerShop.ValueObject;
+namespace SneakerShop.ValueObjects;
 
-public class Nickname(string value) : ValueObject<string>(new NicknameValidator(), value);
+public class Nickname(string name) : ValueObject<string>(new NicknameValidator(), name);

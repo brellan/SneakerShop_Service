@@ -1,6 +1,6 @@
-﻿using SneakerShop.ValueObject.Exceptions;
+﻿using SneakerShop.ValueObjects.Exceptions;
 
-namespace SneakerShop.ValueObject.Base;
+namespace SneakerShop.ValueObjects.Base;
 
 public abstract class ValueObject<T> : IEquatable<ValueObject<T>>
 {
@@ -25,12 +25,9 @@ public abstract class ValueObject<T> : IEquatable<ValueObject<T>>
 
     public bool Equals(ValueObject<T>? other)
     {
-        if (other is null)
-            return false;
-        if (ReferenceEquals(this, other))
-            return true;
-        if (GetType() != other.GetType())
-            return false;
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (GetType() != other.GetType()) return false;
         return other.Value!.Equals(Value);
     }
 

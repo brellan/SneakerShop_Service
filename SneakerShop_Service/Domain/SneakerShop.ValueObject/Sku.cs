@@ -1,6 +1,6 @@
-﻿using SneakerShop.ValueObject.Base;
-using SneakerShop.ValueObject.Validators;
+﻿using SneakerShop.ValueObjects.Base;
+using SneakerShop.ValueObjects.Validators;
 
-namespace SneakerShop.ValueObject;
+namespace SneakerShop.ValueObjects;
 
-public class Sku(string value) : ValueObject<string>(new SkuValidator(), value);
+public class Sku(string code) : ValueObject<string>(new SkuValidator(), code);

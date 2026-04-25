@@ -1,15 +1,18 @@
-﻿using SneakerShop.ValueObject.Base;
-using SneakerShop.ValueObject.Exceptions;
+﻿using SneakerShop.ValueObjects.Base;
+using SneakerShop.ValueObjects.Exceptions;
 
-namespace SneakerShop.ValueObject.Validators;
+namespace SneakerShop.ValueObjects.Validators;
 
 public class DescriptionValidator : IValidator<string>
 {
-    public static int MaxLength => 1000;
+    public static int MAX_LENGTH => 2000;
 
     public void Validate(string value)
     {
-        if (value != null && value.Length > MaxLength)
-            throw new ArgumentLongValueException(nameof(value), value, MaxLength);
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentNullOrWhiteSpaceException(nameof(value));
+
+        if (value.Length > MAX_LENGTH)
+            throw new ArgumentLongValueException(nameof(value), value, MAX_LENGTH);
     }
 }

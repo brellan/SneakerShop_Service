@@ -1,63 +1,51 @@
-﻿using SneakerShop.Domain.Domain.Enums;
-using SneakerShop.ValueObject;
+﻿using SneakerShop.Domain.Base;
+using SneakerShop.ValueObjects;
 
-namespace SneakerShop.Domain.Domain.Entities;
+namespace SneakerShop.Domain.Entities;
 
-public class CartItem
+public class CartItem : Entity<Guid>
 {
-    public Guid Id { get; private set; }
-    public Guid CartId { get; private set; }
-    public Guid ProductId { get; private set; }
-    public Guid VariantId { get; private set; }
-    public ProductNameAtCart ProductName { get; private set; }
-    public Color Color { get; private set; }
+    public Cart Cart { get; private set; }
+    public ProductVariant ProductVariant { get; private set; }
+    public ProductName ProductName { get; private set; }
     public Size Size { get; private set; }
-    public decimal PriceAtAdd { get; private set; }
+    public Color Color { get; private set; }
+    public Price PriceAtAdd { get; private set; }
     public int Quantity { get; private set; }
 
-    public Cart Cart { get; private set; }
+    protected CartItem() { }
 
-    private CartItem() { }
-
-    public CartItem(
-        Guid cartId,
-        Guid productId,
-        Guid variantId,
-        ProductNameAtCart productName,
-        Size size,
-        Color color,
-        decimal priceAtAdd,
-        int quantity)
+    public CartItem(Guid id, Cart cart, ProductVariant productVariant, ProductName productName,
+        Size size, Color color, Price priceAtAdd, int quantity) : base(id)
     {
-        Id = Guid.NewGuid();
-        CartId = cartId;
-        ProductId = productId;
-        VariantId = variantId;
-        ProductName = productName;
-        Size = size;
-        Color = color;
-        PriceAtAdd = priceAtAdd;
-        SetQuantity(quantity);
-    }
+        Cart = cart ?? throw new ArgumentNullException(nameof(cart));
+        ProductVariant = productVariant ?? throw new ArgumentNullException(nameof(productVariant));
+        ProductName = productName ?? throw new ArgumentNullException(nameof(productName));
+        Size = size ?? throw new ArgumentNullException(nameof(size));
+        Color = color ?? throw new ArgumentNullException(nameof(color));
+        PriceAtAdd = priceAtAdd ?? throw new ArgumentNullException(nameof(priceAtAdd));
 
-    public void SetQuantity(int quantity)
-    {
         if (quantity <= 0)
-            throw new ArgumentException("Количество должно быть больше нуля");
+            throw new ArgumentException("Quantity must be positive", nameof(quantity));
+
         Quantity = quantity;
     }
 
-    public void IncreaseQuantity(int amount)
+    internal void UpdateQuantity(int newQuantity)
     {
-        if (amount <= 0)
-            throw new ArgumentException("Количество для увеличения должно быть больше нуля");
-        Quantity += amount;
+        if (newQuantity <= 0)
+            throw new ArgumentException("Quantity must be positive", nameof(newQuantity));
+
+        Quantity = newQuantity;
     }
 
-    public decimal GetTotalPrice() => PriceAtAdd * Quantity;
+    public decimal GetTotalPrice()
+    {
+        return PriceAtAdd.Value * Quantity;
+    }
 
     public override string ToString()
     {
-        return $"CartItem [Id: {Id}, Product: {ProductName}, Size: {Size}, Color: {Color}, Quantity: {Quantity}, Total: {GetTotalPrice()}]";
+        return $"{ProductName.Value} Size: {Size.Value} Color: {Color.Value} Qty: {Quantity} Price: {PriceAtAdd.Value} Total: {GetTotalPrice()}";
     }
 }

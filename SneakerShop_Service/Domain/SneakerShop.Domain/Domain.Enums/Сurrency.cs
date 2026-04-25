@@ -1,4 +1,4 @@
-﻿namespace SneakerShop.Domain.Domain.Enums;
+﻿namespace SneakerShop.Domain.Enums;
 
 public enum Currency
 {

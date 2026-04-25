@@ -1,68 +1,51 @@
-﻿using SneakerShop.Domain.Domain.Enums;
-using SneakerShop.ValueObject;
+﻿using SneakerShop.Domain.Base;
+using SneakerShop.Domain.Exceptions;
+using SneakerShop.ValueObjects;
 
-namespace SneakerShop.Domain.Domain.Entities;
+namespace SneakerShop.Domain.Entities;
 
-public class ProductVariant
+public class ProductVariant : Entity<Guid>
 {
-    public Guid Id { get; private set; }
-    public Guid ProductId { get; private set; }
+    public Product Product { get; private set; }
     public Size Size { get; private set; }
     public Color Color { get; private set; }
     public Sku Sku { get; private set; }
     public int QuantityInStock { get; private set; }
-    public AdditionalImages AdditionalImages { get; private set; }
+    public ICollection<string> AdditionalImages { get; private set; }
 
-    public Product Product { get; private set; }
-
-    private ProductVariant() { }
-
-    public ProductVariant(
-        Guid productId,
-        Size size,
-        Color color,
-        Sku sku,
-        int quantityInStock,
-        AdditionalImages additionalImages = null)
+    protected ProductVariant()
     {
-        Id = Guid.NewGuid();
-        ProductId = productId;
-        Size = size;
-        Color = color;
-        Sku = sku;
-        SetQuantityInStock(quantityInStock);
-        AdditionalImages = additionalImages ?? new AdditionalImages(null);
+        AdditionalImages = [];
     }
 
-    public void SetQuantityInStock(int quantity)
+    public ProductVariant(Guid id, Product product, Size size, Color color, Sku sku,
+        int quantityInStock, ICollection<string> additionalImages) : base(id)
     {
-        if (quantity < 0)
-            throw new ArgumentException("Количество на складе не может быть отрицательным");
-        QuantityInStock = quantity;
+        Product = product ?? throw new ArgumentNullException(nameof(product));
+        Size = size ?? throw new ArgumentNullException(nameof(size));
+        Color = color ?? throw new ArgumentNullException(nameof(color));
+        Sku = sku ?? throw new ArgumentNullException(nameof(sku));
+
+        if (quantityInStock < 0)
+            throw new ArgumentException("Quantity in stock cannot be negative", nameof(quantityInStock));
+
+        QuantityInStock = quantityInStock;
+        AdditionalImages = additionalImages ?? [];
     }
 
-    public void DecreaseStock(int quantity)
+    public void RemoveStock(int amount)
     {
-        if (quantity <= 0)
-            throw new ArgumentException("Количество должно быть больше нуля");
-        if (QuantityInStock - quantity < 0)
-            throw new InvalidOperationException("Недостаточно товара на складе");
-        QuantityInStock -= quantity;
+        if (amount <= 0)
+            throw new ArgumentException("Amount to remove must be positive", nameof(amount));
+
+        if (QuantityInStock < amount)
+            throw new InsufficientStockException(this, amount);
+
+        QuantityInStock -= amount;
     }
-
-    public void IncreaseStock(int quantity)
-    {
-        if (quantity <= 0)
-            throw new ArgumentException("Количество должно быть больше нуля");
-        QuantityInStock += quantity;
-    }
-
-    public bool IsInStock() => QuantityInStock > 0;
-
-    public bool HasSize(Size size) => Size == size;
 
     public override string ToString()
     {
-        return $"ProductVariant [Id: {Id}, ProductId: {ProductId}, Size: {Size}, Color: {Color}, SKU: {Sku}, InStock: {QuantityInStock}]";
+        return $"{Sku.Value} Size: {Size.Value} Color: {Color.Value} Stock: {QuantityInStock} (Id: {Id}, Product: {Product.ProductName.Value})";
     }
 }

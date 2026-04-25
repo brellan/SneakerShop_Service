@@ -3,4 +3,4 @@ using SneakerShop.ValueObjects.Validators;
 
 namespace SneakerShop.ValueObjects;
 
-public class Description(string text) : ValueObject<string>(new DescriptionValidator(), text);
+public class Size(float value) : ValueObject<float>(new SizeValidator(), value);

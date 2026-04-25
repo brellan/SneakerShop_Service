@@ -1,4 +1,4 @@
-﻿namespace SneakerShop.ValueObject.Exceptions;
+﻿namespace SneakerShop.ValueObjects.Exceptions;
 
 public class ArgumentLongValueException(string paramName, string value, int maxLength)
     : FormatException($"The \"{paramName}\" length {value.Length} greater than maximum allowed length {maxLength}")

@@ -1,4 +1,4 @@
-﻿namespace SneakerShop.ValueObject.Exceptions;
+﻿namespace SneakerShop.ValueObjects.Exceptions;
 
 public class ValidatorNullException(string paramName)
-: ArgumentNullException(paramName, $"Validator \"{paramName}\" must be specified for type.");
+    : ArgumentNullException(paramName, $"Validator \"{paramName}\" is null");

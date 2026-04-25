@@ -1,91 +1,56 @@
-﻿using SneakerShop.Domain.Domain.Enums;
-using SneakerShop.ValueObject;
+﻿using SneakerShop.Domain.Base;
+using SneakerShop.Domain.Enums;
+using SneakerShop.Domain.Exceptions;
+using SneakerShop.ValueObjects;
 
-namespace SneakerShop.Domain.Domain.Entities;
+namespace SneakerShop.Domain.Entities;
 
-public class Product
+public class Product : Entity<Guid>
 {
-    public Guid Id { get; private set; }
-    public Guid BrandId { get; private set; }
-    public ProductName Name { get; private set; }
-    public Description Description { get; private set; }
-    public decimal BasePrice { get; private set; }
-    public Currency Currency { get; private set; }
-    public MainImageUrl MainImageUrl { get; private set; }
-    public bool IsActive { get; private set; }
-
     public Brand Brand { get; private set; }
-    private readonly List<ProductVariant> _variants = new();
-    public IReadOnlyCollection<ProductVariant> Variants => _variants.AsReadOnly();
+    public ProductName ProductName { get; private set; }
+    public Description Description { get; private set; }
+    public Price BasePrice { get; private set; }
+    public Currency Currency { get; private set; }
+    public string MainImageUrl { get; private set; }
+    public bool IsActive { get; private set; } = true;
 
-    private Product() { }
+    private readonly ICollection<ProductVariant> _variants = [];
+    public IReadOnlyCollection<ProductVariant> Variants => _variants.ToList().AsReadOnly();
 
-    public Product(
-        Guid brandId,
-        ProductName name,
-        Description description,
-        decimal basePrice,
-        Currency currency,
-        MainImageUrl mainImageUrl)
+    protected Product() { }
+
+    public Product(Guid id, Brand brand, ProductName name, Description description,
+        Price basePrice, Currency currency, string mainImageUrl, bool isActive = true) : base(id)
     {
-        Id = Guid.NewGuid();
-        BrandId = brandId;
-        Name = name;
-        Description = description;
-        SetBasePrice(basePrice);
+        Brand = brand ?? throw new ArgumentNullException(nameof(brand));
+        ProductName = name ?? throw new ArgumentNullException(nameof(name));
+        Description = description ?? throw new ArgumentNullException(nameof(description));
+        BasePrice = basePrice ?? throw new ArgumentNullException(nameof(basePrice));
         Currency = currency;
-        MainImageUrl = mainImageUrl;
-        IsActive = true;
+        MainImageUrl = mainImageUrl ?? throw new ArgumentNullException(nameof(mainImageUrl));
+        IsActive = isActive;
     }
 
-    public void SetBasePrice(decimal basePrice)
+    public ProductVariant AddVariant(Size size, Color color, Sku sku, int quantityInStock,
+        List<string>? additionalImages = null)
     {
-        if (basePrice <= 0)
-            throw new ArgumentException("Цена должна быть больше нуля");
-        BasePrice = basePrice;
+        if (!IsActive) throw new ProductNotActiveException(this);
+
+        var variant = new ProductVariant(Guid.NewGuid(), this, size, color, sku, quantityInStock,
+            additionalImages ?? []);
+        _variants.Add(variant);
+        return variant;
     }
 
-    public void UpdateName(ProductName name) => Name = name;
-    public void UpdateDescription(Description description) => Description = description;
-    public void UpdateMainImage(MainImageUrl mainImageUrl) => MainImageUrl = mainImageUrl;
-
-    public void Activate() => IsActive = true;
-    public void Deactivate() => IsActive = false;
-
-    public void AddVariant(ProductVariant variant) => _variants.Add(variant);
-    public List<Size> GetAvailableSizes()
+    internal void AddVariant(ProductVariant variant)
     {
-        return _variants.Where(v => v.QuantityInStock > 0)
-                       .Select(v => v.Size)
-                       .Distinct()
-                       .ToList();
-    }
-
-    public List<ProductVariant> GetAvailableVariants()
-    {
-        return _variants.Where(v => v.QuantityInStock > 0).ToList();
-    }
-
-    public ProductVariant? GetVariantBySize(Size size)
-    {
-        return _variants.FirstOrDefault(v => v.Size == size);
-    }
-
-    public List<string> GetAllImages()
-    {
-        var images = new List<string> { MainImageUrl.Value };
-        foreach (var variant in _variants)
-        {
-            if (!string.IsNullOrWhiteSpace(variant.AdditionalImages.Value))
-            {
-                images.AddRange(variant.AdditionalImages.Value.Split(','));
-            }
-        }
-        return images.Distinct().ToList();
+        if (!_variants.Contains(variant))
+            _variants.Add(variant);
     }
 
     public override string ToString()
     {
-        return $"Product [Id: {Id}, Name: {Name}, BrandId: {BrandId}, BasePrice: {BasePrice} {Currency}]";
+        return $"{ProductName.Value} {BasePrice.Value} {Currency} Status: {(IsActive ? "Active" : "Inactive")} (Id: {Id}, Brand: {Brand.Name.Value}, Variants: {_variants.Count})";
     }
 }
