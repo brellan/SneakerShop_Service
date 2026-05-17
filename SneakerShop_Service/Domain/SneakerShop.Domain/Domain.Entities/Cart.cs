@@ -1,47 +1,51 @@
 ﻿using SneakerShop.Domain.Base;
 using SneakerShop.Domain.Exceptions;
+using SneakerShop.ValueObjects;
 
 namespace SneakerShop.Domain.Entities;
 
 public class Cart : Entity<Guid>
 {
-    public Guid UserId { get; private set; }
+    public User User { get; private set; }
 
     private readonly ICollection<CartItem> _items = [];
     public IReadOnlyCollection<CartItem> Items => _items.ToList().AsReadOnly();
 
-    public decimal TotalPrice => _items.Sum(item => item.PriceAtAdd.Value * item.Quantity);
+    public TotalPrice TotalPrice => new TotalPrice(_items.Sum(item => item.PriceAtAdd.Value * item.Quantity.Value));
 
     protected Cart() { }
 
-    public Cart(Guid id, Guid userId) : base(id)
+    public Cart(User user)
+        : this(Guid.NewGuid(), user) { }
+
+    protected Cart(Guid id, User user)
+        : base(id)
     {
-        UserId = userId;
+        User = user ?? throw new ArgumentNullException(nameof(user));
     }
 
-    public CartItem AddItem(Guid userId, ProductVariant variant, int quantity = 1)
+    public CartItem AddItem(User user, ProductVariant variant, Quantity? quantity = null)
     {
-        if (UserId != userId)
-            throw new AnotherUserEditCartException(this, userId);
+        if (User != user)
+            throw new AnotherUserEditCartException(this, user.Id);
 
         if (variant == null) throw new ArgumentNullException(nameof(variant));
-        if (quantity <= 0) throw new ArgumentException("Quantity must be positive", nameof(quantity));
+        quantity ??= new Quantity(1);
 
         if (!variant.Product.IsActive)
             throw new ProductNotActiveException(variant.Product);
 
-        if (variant.QuantityInStock < quantity)
-            throw new InsufficientStockException(variant, quantity);
+        if (variant.QuantityInStock.Value < quantity.Value)
+            throw new InsufficientStockException(variant, quantity.Value);
 
         var existingItem = _items.FirstOrDefault(i => i.ProductVariant?.Id == variant.Id);
         if (existingItem != null)
         {
-            existingItem.UpdateQuantity(existingItem.Quantity + quantity);
+            existingItem.UpdateQuantity(new Quantity(existingItem.Quantity.Value + quantity.Value));
             return existingItem;
         }
 
         var item = new CartItem(
-            Guid.NewGuid(),
             this,
             variant,
             variant.Product.ProductName,
@@ -54,10 +58,10 @@ public class Cart : Entity<Guid>
         return item;
     }
 
-    public void RemoveItem(Guid userId, Guid cartItemId)
+    public void RemoveItem(User user, Guid cartItemId)
     {
-        if (UserId != userId)
-            throw new AnotherUserEditCartException(this, userId);
+        if (User != user)
+            throw new AnotherUserEditCartException(this, user.Id);
 
         var item = _items.FirstOrDefault(i => i.Id == cartItemId);
         if (item == null)
@@ -66,14 +70,14 @@ public class Cart : Entity<Guid>
         _items.Remove(item);
     }
 
-    public void UpdateItemQuantity(Guid userId, Guid cartItemId, int newQuantity)
+    public void UpdateItemQuantity(User user, Guid cartItemId, Quantity newQuantity)
     {
-        if (UserId != userId)
-            throw new AnotherUserEditCartException(this, userId);
+        if (User != user)
+            throw new AnotherUserEditCartException(this, user.Id);
 
-        if (newQuantity <= 0)
+        if (newQuantity.Value <= 0)
         {
-            RemoveItem(userId, cartItemId);
+            RemoveItem(user, cartItemId);
             return;
         }
 
@@ -81,22 +85,22 @@ public class Cart : Entity<Guid>
         if (item == null)
             throw new CartItemNotFoundException(cartItemId);
 
-        if (item.ProductVariant.QuantityInStock < newQuantity)
-            throw new InsufficientStockException(item.ProductVariant, newQuantity);
+        if (item.ProductVariant.QuantityInStock.Value < newQuantity.Value)
+            throw new InsufficientStockException(item.ProductVariant, newQuantity.Value);
 
         item.UpdateQuantity(newQuantity);
     }
 
-    public void Clear(Guid userId)
+    public void Clear(User user)
     {
-        if (UserId != userId)
-            throw new AnotherUserEditCartException(this, userId);
+        if (User != user)
+            throw new AnotherUserEditCartException(this, user.Id);
 
         _items.Clear();
     }
 
     public override string ToString()
     {
-        return $"Cart {Id} UserId: {UserId} Items: {_items.Count} Total: {TotalPrice}";
+        return $"Cart {Id} User: {User.Nickname.Value} Items: {_items.Count} Total: {TotalPrice.Value}";
     }
 }

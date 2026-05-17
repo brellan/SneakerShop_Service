@@ -3,7 +3,7 @@
 namespace SneakerShop.Domain.Exceptions;
 
 public class AnotherUserEditCartException(Cart cart, Guid userId)
-    : InvalidOperationException($"User {userId} cannot edit cart {cart.Id} belonging to user {cart.UserId}")
+    : InvalidOperationException($"User {userId} cannot edit cart {cart.Id} belonging to user {cart}")
 {
     public Cart Cart => cart;
     public Guid UserId => userId;

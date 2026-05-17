@@ -12,7 +12,7 @@ public class Product : Entity<Guid>
     public Description Description { get; private set; }
     public Price BasePrice { get; private set; }
     public Currency Currency { get; private set; }
-    public string MainImageUrl { get; private set; }
+    public ImageUrl MainImageUrl { get; private set; }
     public bool IsActive { get; private set; } = true;
 
     private readonly ICollection<ProductVariant> _variants = [];
@@ -20,8 +20,25 @@ public class Product : Entity<Guid>
 
     protected Product() { }
 
-    public Product(Guid id, Brand brand, ProductName name, Description description,
-        Price basePrice, Currency currency, string mainImageUrl, bool isActive = true) : base(id)
+    public Product(
+        Brand brand,
+        ProductName name,
+        Description description,
+        Price basePrice,
+        Currency currency,
+        ImageUrl mainImageUrl,
+        bool isActive = true)
+        : this(Guid.NewGuid(), brand, name, description, basePrice, currency, mainImageUrl, isActive) { }
+
+    protected Product(Guid id,
+        Brand brand,
+        ProductName name,
+        Description description,
+        Price basePrice,
+        Currency currency,
+        ImageUrl mainImageUrl,
+        bool isActive = true)
+        : base(id)
     {
         Brand = brand ?? throw new ArgumentNullException(nameof(brand));
         ProductName = name ?? throw new ArgumentNullException(nameof(name));
@@ -32,21 +49,32 @@ public class Product : Entity<Guid>
         IsActive = isActive;
     }
 
-    public ProductVariant AddVariant(Size size, Color color, Sku sku, int quantityInStock,
+    public ProductVariant AddVariant(Size size, Color color, Sku sku, StockQuantity quantityInStock,
         List<string>? additionalImages = null)
     {
         if (!IsActive) throw new ProductNotActiveException(this);
 
-        var variant = new ProductVariant(Guid.NewGuid(), this, size, color, sku, quantityInStock,
+        var variant = new ProductVariant(this, size, color, sku, quantityInStock,
             additionalImages ?? []);
         _variants.Add(variant);
         return variant;
     }
 
-    internal void AddVariant(ProductVariant variant)
+    internal bool AddVariant(ProductVariant variant)
     {
+        if (!IsActive) throw new ProductNotActiveException(this);
+
         if (!_variants.Contains(variant))
+        {
             _variants.Add(variant);
+            return true;
+        }
+        return false;
+    }
+
+    public void CheckActive()
+    {
+        if (!IsActive) throw new ProductNotActiveException(this);
     }
 
     public override string ToString()

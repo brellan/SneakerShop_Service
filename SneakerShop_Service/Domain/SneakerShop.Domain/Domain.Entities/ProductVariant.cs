@@ -10,7 +10,7 @@ public class ProductVariant : Entity<Guid>
     public Size Size { get; private set; }
     public Color Color { get; private set; }
     public Sku Sku { get; private set; }
-    public int QuantityInStock { get; private set; }
+    public StockQuantity QuantityInStock { get; private set; }
     public ICollection<string> AdditionalImages { get; private set; }
 
     protected ProductVariant()
@@ -18,34 +18,46 @@ public class ProductVariant : Entity<Guid>
         AdditionalImages = [];
     }
 
-    public ProductVariant(Guid id, Product product, Size size, Color color, Sku sku,
-        int quantityInStock, ICollection<string> additionalImages) : base(id)
+    public ProductVariant(
+        Product product,
+        Size size,
+        Color color,
+        Sku sku,
+        StockQuantity quantityInStock,
+        ICollection<string>? additionalImages = null)
+        : this(Guid.NewGuid(), product, size, color, sku, quantityInStock, additionalImages) { }
+
+    protected ProductVariant(Guid id,
+        Product product,
+        Size size,
+        Color color,
+        Sku sku,
+        StockQuantity quantityInStock,
+        ICollection<string>? additionalImages = null)
+        : base(id)
     {
         Product = product ?? throw new ArgumentNullException(nameof(product));
         Size = size ?? throw new ArgumentNullException(nameof(size));
         Color = color ?? throw new ArgumentNullException(nameof(color));
         Sku = sku ?? throw new ArgumentNullException(nameof(sku));
-
-        if (quantityInStock < 0)
-            throw new ArgumentException("Quantity in stock cannot be negative", nameof(quantityInStock));
-
-        QuantityInStock = quantityInStock;
+        QuantityInStock = quantityInStock ?? throw new ArgumentNullException(nameof(quantityInStock));
         AdditionalImages = additionalImages ?? [];
     }
 
-    public void RemoveStock(int amount)
+    public bool RemoveStock(int amount)
     {
         if (amount <= 0)
             throw new ArgumentException("Amount to remove must be positive", nameof(amount));
 
-        if (QuantityInStock < amount)
+        if (QuantityInStock.Value < amount)
             throw new InsufficientStockException(this, amount);
 
-        QuantityInStock -= amount;
+        QuantityInStock = new StockQuantity(QuantityInStock.Value - amount);
+        return true;
     }
 
     public override string ToString()
     {
-        return $"{Sku.Value} Size: {Size.Value} Color: {Color.Value} Stock: {QuantityInStock} (Id: {Id}, Product: {Product.ProductName.Value})";
+        return $"{Sku.Value} Size: {Size.Value} Color: {Color.Value} Stock: {QuantityInStock.Value} (Id: {Id}, Product: {Product.ProductName.Value})";
     }
 }

@@ -7,7 +7,7 @@ namespace SneakerShop.Domain.Entities;
 public class Brand : Entity<Guid>
 {
     public BrandName Name { get; private set; }
-    public string LogoUrl { get; private set; }
+    public LogoUrl LogoUrl { get; private set; }
     public Description Description { get; private set; }
 
     private readonly ICollection<Product> _products = [];
@@ -15,7 +15,17 @@ public class Brand : Entity<Guid>
 
     protected Brand() { }
 
-    public Brand(Guid id, BrandName name, string logoUrl, Description description) : base(id)
+    public Brand(
+        BrandName name,
+        LogoUrl logoUrl,
+        Description description)
+        : this(Guid.NewGuid(), name, logoUrl, description) { }
+
+    protected Brand(Guid id,
+        BrandName name,
+        LogoUrl logoUrl,
+        Description description)
+        : base(id)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         LogoUrl = logoUrl ?? throw new ArgumentNullException(nameof(logoUrl));
@@ -23,17 +33,21 @@ public class Brand : Entity<Guid>
     }
 
     public Product AddProduct(ProductName name, Description description, Price basePrice,
-        Currency currency, string mainImageUrl)
+        Currency currency, ImageUrl mainImageUrl)
     {
-        var product = new Product(Guid.NewGuid(), this, name, description, basePrice, currency, mainImageUrl);
+        var product = new Product(this, name, description, basePrice, currency, mainImageUrl);
         _products.Add(product);
         return product;
     }
 
-    internal void AddProduct(Product product)
+    internal bool AddProduct(Product product)
     {
         if (!_products.Contains(product))
+        {
             _products.Add(product);
+            return true;
+        }
+        return false;
     }
 
     public override string ToString()

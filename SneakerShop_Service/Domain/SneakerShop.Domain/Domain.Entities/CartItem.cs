@@ -11,12 +11,29 @@ public class CartItem : Entity<Guid>
     public Size Size { get; private set; }
     public Color Color { get; private set; }
     public Price PriceAtAdd { get; private set; }
-    public int Quantity { get; private set; }
+    public Quantity Quantity { get; private set; }
 
     protected CartItem() { }
 
-    public CartItem(Guid id, Cart cart, ProductVariant productVariant, ProductName productName,
-        Size size, Color color, Price priceAtAdd, int quantity) : base(id)
+    public CartItem(
+        Cart cart,
+        ProductVariant productVariant,
+        ProductName productName,
+        Size size,
+        Color color,
+        Price priceAtAdd,
+        Quantity quantity)
+        : this(Guid.NewGuid(), cart, productVariant, productName, size, color, priceAtAdd, quantity) { }
+
+    protected CartItem(Guid id,
+        Cart cart,
+        ProductVariant productVariant,
+        ProductName productName,
+        Size size,
+        Color color,
+        Price priceAtAdd,
+        Quantity quantity)
+        : base(id)
     {
         Cart = cart ?? throw new ArgumentNullException(nameof(cart));
         ProductVariant = productVariant ?? throw new ArgumentNullException(nameof(productVariant));
@@ -24,28 +41,21 @@ public class CartItem : Entity<Guid>
         Size = size ?? throw new ArgumentNullException(nameof(size));
         Color = color ?? throw new ArgumentNullException(nameof(color));
         PriceAtAdd = priceAtAdd ?? throw new ArgumentNullException(nameof(priceAtAdd));
-
-        if (quantity <= 0)
-            throw new ArgumentException("Quantity must be positive", nameof(quantity));
-
-        Quantity = quantity;
+        Quantity = quantity ?? throw new ArgumentNullException(nameof(quantity));
     }
 
-    internal void UpdateQuantity(int newQuantity)
+    internal void UpdateQuantity(Quantity newQuantity)
     {
-        if (newQuantity <= 0)
-            throw new ArgumentException("Quantity must be positive", nameof(newQuantity));
-
-        Quantity = newQuantity;
+        Quantity = newQuantity ?? throw new ArgumentNullException(nameof(newQuantity));
     }
 
     public decimal GetTotalPrice()
     {
-        return PriceAtAdd.Value * Quantity;
+        return PriceAtAdd.Value * Quantity.Value;
     }
 
     public override string ToString()
     {
-        return $"{ProductName.Value} Size: {Size.Value} Color: {Color.Value} Qty: {Quantity} Price: {PriceAtAdd.Value} Total: {GetTotalPrice()}";
+        return $"{ProductName.Value} Size: {Size.Value} Color: {Color.Value} Qty: {Quantity.Value} Price: {PriceAtAdd.Value} Total: {GetTotalPrice()}";
     }
 }
