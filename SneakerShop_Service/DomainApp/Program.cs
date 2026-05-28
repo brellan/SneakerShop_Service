@@ -9,6 +9,7 @@ namespace SneakerShop.DomainApp
     {
         static void Main(string[] args)
         {
+
             // ===== ПОДГОТОВКА ТЕСТОВЫХ ДАННЫХ =====
             Console.WriteLine("--- Подготовка тестовых данных ---\n");
 
@@ -135,7 +136,7 @@ namespace SneakerShop.DomainApp
             // ===== 13. БРОНИРОВАНИЕ ТОВАРА НА СКЛАДЕ =====
             Console.WriteLine("--- 13. Бронирование товара (уменьшение stock) ---");
             Console.WriteLine($"До: {variant1}");
-            variant1.RemoveStock(2);
+            variant1.RemoveStock(new StockQuantity(2));
             Console.WriteLine($"После: {variant1}\n");
 
             // ===== 14. ПРОВЕРКА ДОСТУПНОСТИ ТОВАРА =====
@@ -253,11 +254,11 @@ namespace SneakerShop.DomainApp
             catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
 
             Console.WriteLine("16.22. Попытка списать больше, чем есть на складе:");
-            try { variant3.RemoveStock(100); }
+            try { variant3.RemoveStock(new StockQuantity(100)); }
             catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
 
             Console.WriteLine("16.23. Попытка списать отрицательное количество со склада:");
-            try { variant1.RemoveStock(-5); }
+            try { variant1.RemoveStock(new StockQuantity(-5)); }
             catch (Exception ex) { Console.WriteLine($"  Ошибка: {ex.Message}\n"); }
 
             // ===== 17. ДЕМОНСТРАЦИЯ TOSTRING() =====
@@ -272,6 +273,8 @@ namespace SneakerShop.DomainApp
             Console.WriteLine($"CartItem: {cartItem}");
             Console.WriteLine($"Wishlist: {wishlist}");
             Console.WriteLine($"WishlistItem: {wishlistItem}");
+
+
         }
     }
 }

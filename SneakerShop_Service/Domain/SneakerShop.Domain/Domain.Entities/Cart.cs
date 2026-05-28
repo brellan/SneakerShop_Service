@@ -11,7 +11,18 @@ public class Cart : Entity<Guid>
     private readonly ICollection<CartItem> _items = [];
     public IReadOnlyCollection<CartItem> Items => _items.ToList().AsReadOnly();
 
-    public TotalPrice TotalPrice => new TotalPrice(_items.Sum(item => item.PriceAtAdd.Value * item.Quantity.Value));
+    public TotalPrice TotalPrice
+    {
+        get
+        {
+            var total = new TotalPrice(0);
+            foreach (var item in _items)
+            {
+                total += item.PriceAtAdd * item.Quantity;
+            }
+            return total;
+        }
+    }
 
     protected Cart() { }
 
@@ -32,8 +43,7 @@ public class Cart : Entity<Guid>
         if (variant == null) throw new ArgumentNullException(nameof(variant));
         quantity ??= new Quantity(1);
 
-        if (!variant.Product.IsActive)
-            throw new ProductNotActiveException(variant.Product);
+        variant.Product.CheckActive();
 
         if (variant.QuantityInStock.Value < quantity.Value)
             throw new InsufficientStockException(variant, quantity.Value);
@@ -41,7 +51,7 @@ public class Cart : Entity<Guid>
         var existingItem = _items.FirstOrDefault(i => i.ProductVariant?.Id == variant.Id);
         if (existingItem != null)
         {
-            existingItem.UpdateQuantity(new Quantity(existingItem.Quantity.Value + quantity.Value));
+            existingItem.UpdateQuantity(existingItem.Quantity + quantity);
             return existingItem;
         }
 
@@ -75,7 +85,7 @@ public class Cart : Entity<Guid>
         if (User != user)
             throw new AnotherUserEditCartException(this, user.Id);
 
-        if (newQuantity.Value <= 0)
+        if (newQuantity <= new Quantity(0))
         {
             RemoveItem(user, cartItemId);
             return;

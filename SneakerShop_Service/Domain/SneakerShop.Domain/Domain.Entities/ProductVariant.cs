@@ -44,15 +44,15 @@ public class ProductVariant : Entity<Guid>
         AdditionalImages = additionalImages ?? [];
     }
 
-    public bool RemoveStock(int amount)
+    public bool RemoveStock(StockQuantity amount)
     {
-        if (amount <= 0)
+        if (amount <= new StockQuantity(0))
             throw new ArgumentException("Amount to remove must be positive", nameof(amount));
 
-        if (QuantityInStock.Value < amount)
-            throw new InsufficientStockException(this, amount);
+        if (QuantityInStock.Value < amount.Value)
+            throw new InsufficientStockException(this, amount.Value);
 
-        QuantityInStock = new StockQuantity(QuantityInStock.Value - amount);
+        QuantityInStock = QuantityInStock - amount;
         return true;
     }
 

@@ -11,6 +11,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneakerShop.ValueObject", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainApp", "DomainApp\DomainApp.csproj", "{650C8A7F-A65D-406B-A376-3537F9A277AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneakerShop.Domain.Repositories.Abstractions", "ClassLibrary1\SneakerShop.Domain.Repositories.Abstractions.csproj", "{4237A8C6-D5D1-4145-9844-A331271D4D6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{D32A6653-4D67-44DA-B1B9-99B401610E08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneakerShop.Infrastructure.EntityFramework", "SneakerShop.Infrastructure.EntityFramework\SneakerShop.Infrastructure.EntityFramework.csproj", "{42EBBB53-11FA-4458-8A0F-AAC7C7D695FE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{A4C4D8DD-5DD5-4DB8-9C7B-A330F23A0EB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneakerShop.WebHost", "SneakerShop.WebHost\SneakerShop.WebHost.csproj", "{38CDCE80-0048-4806-85B2-C226618B960E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,9 +45,29 @@ Global
 		{650C8A7F-A65D-406B-A376-3537F9A277AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{650C8A7F-A65D-406B-A376-3537F9A277AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{650C8A7F-A65D-406B-A376-3537F9A277AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4237A8C6-D5D1-4145-9844-A331271D4D6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4237A8C6-D5D1-4145-9844-A331271D4D6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4237A8C6-D5D1-4145-9844-A331271D4D6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4237A8C6-D5D1-4145-9844-A331271D4D6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42EBBB53-11FA-4458-8A0F-AAC7C7D695FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42EBBB53-11FA-4458-8A0F-AAC7C7D695FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42EBBB53-11FA-4458-8A0F-AAC7C7D695FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42EBBB53-11FA-4458-8A0F-AAC7C7D695FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38CDCE80-0048-4806-85B2-C226618B960E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38CDCE80-0048-4806-85B2-C226618B960E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38CDCE80-0048-4806-85B2-C226618B960E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38CDCE80-0048-4806-85B2-C226618B960E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A0E21EF8-6FF5-4547-AECB-58AB57C3058C} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{38AF0CAE-BCDA-4E94-A538-BEEA0DF57DB9} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{650C8A7F-A65D-406B-A376-3537F9A277AE} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{4237A8C6-D5D1-4145-9844-A331271D4D6A} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{42EBBB53-11FA-4458-8A0F-AAC7C7D695FE} = {D32A6653-4D67-44DA-B1B9-99B401610E08}
+		{38CDCE80-0048-4806-85B2-C226618B960E} = {A4C4D8DD-5DD5-4DB8-9C7B-A330F23A0EB9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1C71D84E-9C4D-4D53-8CDA-E247BA21D39D}

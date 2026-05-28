@@ -51,7 +51,7 @@ public class CartItem : Entity<Guid>
 
     public decimal GetTotalPrice()
     {
-        return PriceAtAdd.Value * Quantity.Value;
+        return (PriceAtAdd * Quantity).Value;
     }
 
     public override string ToString()

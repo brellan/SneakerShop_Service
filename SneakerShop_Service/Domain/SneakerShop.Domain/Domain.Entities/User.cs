@@ -7,6 +7,10 @@ public class User : Entity<Guid>
 {
     public Nickname Nickname { get; private set; }
 
+    public Cart Cart { get; private set; }
+
+    public Wishlist Wishlist { get; private set; }
+
     protected User() { }
 
     public User(Nickname nickname)
